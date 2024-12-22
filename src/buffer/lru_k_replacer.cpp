@@ -74,8 +74,6 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
     node_store_.erase(*frame_id);
     curr_size_ -= 1;
   }
-  BUSTUB_ASSERT(curr_size_ >= 0,
-                "It's impossible that the size of LRUKReplacer is less than zero! Multiple threads might data race");
   return true;
 }
 

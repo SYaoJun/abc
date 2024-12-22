@@ -4,12 +4,11 @@
 namespace bustub {
 
 BasicPageGuard::BasicPageGuard(BasicPageGuard &&that) noexcept {
-  bpm_ = that.bpm_;
-  page_ = that.page_;
-  is_dirty_ = that.is_dirty_;
-
-  that.bpm_ = nullptr;
+  this->page_ = that.page_;
+  this->bpm_ = that.bpm_;
+  this->is_dirty_ = that.is_dirty_;
   that.page_ = nullptr;
+  that.bpm_ = nullptr;
   that.is_dirty_ = false;
 }
 
@@ -23,29 +22,26 @@ void BasicPageGuard::Drop() {
 }
 
 auto BasicPageGuard::operator=(BasicPageGuard &&that) noexcept -> BasicPageGuard & {
-  if (this != &that) {
-    Drop();
-
-    bpm_ = that.bpm_;
-    page_ = that.page_;
-    is_dirty_ = that.is_dirty_;
-
-    that.bpm_ = nullptr;
-    that.page_ = nullptr;
-    that.is_dirty_ = false;
-  }
+  this->Drop();
+  this->page_ = that.page_;
+  this->bpm_ = that.bpm_;
+  this->is_dirty_ = that.is_dirty_;
+  that.page_ = nullptr;
+  that.page_ = nullptr;
+  that.is_dirty_ = false;
   return *this;
 }
 
 BasicPageGuard::~BasicPageGuard() { Drop(); };  // NOLINT
 
-ReadPageGuard::ReadPageGuard(ReadPageGuard &&that) noexcept { guard_ = std::move(that.guard_); }
+ReadPageGuard::ReadPageGuard(ReadPageGuard &&that) noexcept {
+  this->Drop();
+  this->guard_ = std::move(that.guard_);
+}
 
 auto ReadPageGuard::operator=(ReadPageGuard &&that) noexcept -> ReadPageGuard & {
-  if (this != &that) {
-    guard_.page_->RUnlatch();
-    guard_ = std::move(that.guard_);
-  }
+  this->Drop();
+  this->guard_ = std::move(that.guard_);
   return *this;
 }
 
@@ -58,13 +54,14 @@ void ReadPageGuard::Drop() {
 
 ReadPageGuard::~ReadPageGuard() { Drop(); }  // NOLINT
 
-WritePageGuard::WritePageGuard(WritePageGuard &&that) noexcept { guard_ = std::move(that.guard_); }
+WritePageGuard::WritePageGuard(WritePageGuard &&that) noexcept {
+  this->Drop();
+  this->guard_ = std::move(that.guard_);
+}
 
 auto WritePageGuard::operator=(WritePageGuard &&that) noexcept -> WritePageGuard & {
-  if (this != &that) {
-    guard_.page_->WUnlatch();
-    guard_ = std::move(that.guard_);
-  }
+  this->Drop();
+  this->guard_ = std::move(that.guard_);
   return *this;
 }
 
