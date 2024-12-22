@@ -14,18 +14,12 @@ BasicPageGuard::BasicPageGuard(BasicPageGuard &&that) noexcept {
 }
 
 void BasicPageGuard::Drop() {
-  if (page_ == nullptr || bpm_ == nullptr) {
-    return;
+  if (bpm_ != nullptr && page_ != nullptr) {
+    bpm_->UnpinPage(page_->GetPageId(), is_dirty_);
   }
-  BUSTUB_ASSERT(page_ != nullptr, "The page_ must be nullptr.");
-  BUSTUB_ASSERT(bpm_ != nullptr, "The bpm_ must be nullptr.");
-
-  auto page_id = page_->GetPageId();
-  bpm_->UnpinPage(page_id, is_dirty_);
-  // The following assert can't be guarantee due to this function might be called
-  // when the pin count of page is 0.
-  // BUSTUB_ASSERT(succ == true, "Unpin op must be successful.");
-  BUSTUB_ASSERT(page_->GetPinCount() >= 0, "The pin count of page must be greater than or equal 0.");
+  this->page_ = nullptr;
+  this->bpm_ = nullptr;
+  this->is_dirty_ = false;
 }
 
 auto BasicPageGuard::operator=(BasicPageGuard &&that) noexcept -> BasicPageGuard & {
@@ -56,13 +50,9 @@ auto ReadPageGuard::operator=(ReadPageGuard &&that) noexcept -> ReadPageGuard & 
 }
 
 void ReadPageGuard::Drop() {
-  if (guard_.page_ == nullptr || guard_.bpm_ == nullptr) {
-    return;
+  if (guard_.page_ != nullptr) {
+    guard_.page_->RUnlatch();
   }
-  BUSTUB_ASSERT(guard_.page_ != nullptr, "The page_ must be nullptr.");
-  BUSTUB_ASSERT(guard_.bpm_ != nullptr, "The bpm_ must be nullptr.");
-
-  guard_.page_->RUnlatch();
   guard_.Drop();
 }
 
@@ -79,13 +69,9 @@ auto WritePageGuard::operator=(WritePageGuard &&that) noexcept -> WritePageGuard
 }
 
 void WritePageGuard::Drop() {
-  if (guard_.page_ == nullptr || guard_.bpm_ == nullptr) {
-    return;
+  if (guard_.page_ != nullptr) {
+    guard_.page_->WUnlatch();
   }
-  BUSTUB_ASSERT(guard_.page_ != nullptr, "The page_ must be nullptr.");
-  BUSTUB_ASSERT(guard_.bpm_ != nullptr, "The bpm_ must be nullptr.");
-
-  guard_.page_->WUnlatch();
   guard_.Drop();
 }
 
